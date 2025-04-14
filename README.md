@@ -1,70 +1,53 @@
-# Getting Started with Create React App
+# Recession Prediction Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A dashboard for visualizing our recession probability forecasts across multiple economic models and time horizons.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Multi-model Comparison**: View and compare predictions from 11 different machine learning models
+- **Multiple Visualization Options**:
+  - Current predictions by forecast horizon
+  - Historical model performance 
+  - Forecast comparison across time horizons
+- **Interactive Controls**: Filter models, change time horizons, and switch between different views
 
-### `npm start`
+## Technologies Used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- React
+- Recharts (for data visualization)
+- Tailwind CSS (for styling)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Data Sources
 
-### `npm test`
+The dashboard uses simulated data for illustration, but in a real-world implementation, it would draw from the following economic indicators:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- NBER Recession Indicators (USREC)
+- Unemployment Rate (UNRATE)
+- Average Hourly Earnings (AHETPI)
+- New Housing Units Authorized (PERMIT)
+- Corporate Bond Yield Spread (AAA10Y)
+- M2 Money Stock (M2REAL)
+- Consumer Price Index (CPIAUCSL)
+- Federal Funds Rate (DFF)
+- Industrial Production (INDPRO)
+- Treasury Yield Spread (T10Y2Y)
+- Initial Claims (IC4WSA)
+- WTI Crude Oil Price (WTISPLC)
+- Federal Surplus/Deficit (MTSDS133FMS)
+- S&P 500 Percentage Change (S&P500CHNG)
 
-### `npm run build`
+## Available Models
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The dashboard includes predictions from the following models:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Random Forest
+- XGBoost
+- Logistic Regression
+- SVM (Support Vector Machine)
+- Naive Bayes
+- k-NN (k-Nearest Neighbors)
+- AdaBoost
+- MLP (Multi-Layer Perceptron)
+- ARIMAX (Autoregressive Integrated Moving Average with Exogenous Variables)
+- LSTM (Long Short-Term Memory neural network)
+- Ensemble (Combined prediction from multiple models)
