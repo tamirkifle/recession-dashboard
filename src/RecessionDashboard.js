@@ -12,87 +12,11 @@ import {
   Bar,
   LineChart,
   Line,
+  Cell
 } from "recharts";
 
-// Dummy data - this would be replaced with actual API data
-const getDummyData = () => {
-  const currentDate = new Date();
-  const lastDataDate = new Date(currentDate);
-  lastDataDate.setMonth(lastDataDate.getMonth() - 1);
-
-  const horizons = ["1M", "3M", "6M", "12M"];
-  const models = [
-    { id: "rf", name: "Random Forest", color: "#8884d8" },
-    { id: "xgb", name: "XGBoost", color: "#82ca9d" },
-    { id: "lr", name: "Logistic Regression", color: "#ffc658" },
-    { id: "svm", name: "SVM", color: "#ff8042" },
-    { id: "nb", name: "Naive Bayes", color: "#0088FE" },
-    { id: "knn", name: "k-NN", color: "#00C49F" },
-    { id: "ada", name: "AdaBoost", color: "#FFBB28" },
-    { id: "mlp", name: "MLP", color: "#FF8042" },
-    { id: "arimax", name: "ARIMAX", color: "#8dd1e1" },
-    { id: "lstm", name: "LSTM", color: "#a4de6c" },
-    { id: "ensemble", name: "Ensemble", color: "#d0ed57" },
-  ];
-
-  const predictions = {};
-
-  horizons.forEach((horizon) => {
-    const targetDate = new Date(currentDate);
-    const months = parseInt(horizon.replace("M", ""));
-    targetDate.setMonth(targetDate.getMonth() + months);
-
-    predictions[horizon] = {
-      targetDate: targetDate.toISOString().split("T")[0],
-      models: {},
-    };
-
-    models.forEach((model) => {
-      // Generate semi-realistic predictions
-      let baseProbability = 0.4 + Math.random() * 0.2; // 0.4-0.6
-
-      // Longer horizons have more uncertainty
-      const uncertaintyFactor = 1 + parseInt(horizon.replace("M", "")) / 12;
-      const finalProb = Math.min(0.95, baseProbability * uncertaintyFactor);
-
-      predictions[horizon].models[model.id] = parseFloat(finalProb.toFixed(2));
-    });
-  });
-
-  // Historical data (12 months back)
-  const historicalData = [];
-  for (let i = 12; i >= 0; i--) {
-    const date = new Date(currentDate);
-    date.setMonth(date.getMonth() - i);
-
-    const entry = {
-      date: date.toISOString().split("T")[0],
-      actual: i <= 1 ? 0 : i >= 9 ? 1 : 0, // Simulate a recent recession ending
-    };
-
-    // Add historical predictions (with some error)
-    models.forEach((model) => {
-      if (i >= 3) {
-        // Only have predictions for dates with sufficient history
-        const actualValue = i >= 9 ? 1 : 0;
-        const errorMargin = Math.random() * 0.3 - 0.15; // Random error between -0.15 and 0.15
-        entry[`${model.id}_pred`] = Math.max(
-          0,
-          Math.min(1, actualValue + errorMargin)
-        );
-      }
-    });
-
-    historicalData.push(entry);
-  }
-
-  return {
-    lastUpdated: lastDataDate.toISOString().split("T")[0],
-    predictions,
-    historicalData,
-    models,
-  };
-};
+// Import the JSON data directly
+import predictionData from './recession_prediction_data.json';
 
 // Custom tooltip for charts
 const CustomTooltip = ({ active, payload, label }) => {
@@ -117,14 +41,22 @@ const RecessionDashboard = () => {
   const [selectedHorizon, setSelectedHorizon] = useState("6M");
   const [selectedModels, setSelectedModels] = useState([]);
   const [view, setView] = useState("current");
+  const [historicalPeriod, setHistoricalPeriod] = useState("last12");
+  
+  // Define key historical recession periods (for selection)
+  const recessionPeriods = [
+    { id: "last12", name: "Last 12 Months" },
+    { id: "covid", name: "COVID-19 (2020)", start: "2020-01-01", end: "2020-12-31" },
+    { id: "gfc", name: "Financial Crisis (2007-2009)", start: "2007-10-01", end: "2009-06-30" },
+    { id: "dotcom", name: "DotCom Bubble (2001)", start: "2001-01-01", end: "2002-01-31" },
+    { id: "all", name: "All Historical Data" }
+  ];
 
   useEffect(() => {
-    // This would be an API call in a real application
-    const fetchedData = getDummyData();
-    setData(fetchedData);
-
+    // Initialize the data directly from the imported JSON
+    setData(predictionData);
     // Initialize with all models selected
-    setSelectedModels(fetchedData.models.map((m) => m.id));
+    setSelectedModels(predictionData.models.map((m) => m.id));
   }, []);
 
   if (!data)
@@ -149,8 +81,22 @@ const RecessionDashboard = () => {
     }))
     .sort((a, b) => a.value - b.value);
 
-  // Prepare data for the historical performance chart
-  const historicalData = data.historicalData;
+  // Prepare data for the historical performance chart based on selected period
+  let filteredHistoricalData = data.historicalData;
+  
+  // Filter historical data based on selected period
+  if (historicalPeriod !== "last12" && historicalPeriod !== "all") {
+    const selectedPeriod = recessionPeriods.find(p => p.id === historicalPeriod);
+    if (selectedPeriod && selectedPeriod.start && selectedPeriod.end) {
+      filteredHistoricalData = data.historicalData.filter(item => {
+        return item.date >= selectedPeriod.start && item.date <= selectedPeriod.end;
+      });
+    }
+  } else if (historicalPeriod === "last12") {
+    // Get only the last 12 months of data
+    filteredHistoricalData = data.historicalData.slice(-12);
+  }
+  // For "all", we use the complete historical data
 
   // Prepare data for the comparison chart (across horizons)
   const comparisonData = [];
@@ -257,15 +203,14 @@ const RecessionDashboard = () => {
                       setSelectedModels([...selectedModels, model.id]);
                     }
                   }}
-                  className={`px-3 py-1.5 rounded-full text-sm ${
-                    selectedModels.includes(model.id)
-                      ? `bg-${model.color.replace("#", "")} text-white`
-                      : "bg-gray-200 text-gray-700"
-                  }`}
+                  className="px-3 py-1.5 rounded-full text-sm"
                   style={{
                     backgroundColor: selectedModels.includes(model.id)
                       ? model.color
-                      : undefined,
+                      : "#e5e7eb",
+                    color: selectedModels.includes(model.id)
+                      ? "white"
+                      : "#374151"
                   }}
                 >
                   {model.name}
@@ -309,11 +254,10 @@ const RecessionDashboard = () => {
                     <Bar
                       dataKey="value"
                       name="Probability"
-                      fill="#8884d8"
                       radius={[0, 4, 4, 0]}
                     >
                       {currentPredictionData.map((entry, index) => (
-                        <cell key={index} fill={entry.color} />
+                        <Cell key={index} fill={entry.color} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -338,13 +282,33 @@ const RecessionDashboard = () => {
           {view === "historical" && (
             <>
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Historical Model Performance (Last 12 Months)
+                Historical Model Performance
               </h2>
+              
+              {/* Historical period selector */}
+              <div className="mb-6">
+                <label className="font-medium mb-2 block">Select Historical Period:</label>
+                <div className="flex flex-wrap gap-2">
+                  {recessionPeriods.map((period) => (
+                    <button
+                      key={period.id}
+                      onClick={() => setHistoricalPeriod(period.id)}
+                      className={`px-3 py-1.5 rounded-md text-sm ${
+                        historicalPeriod === period.id
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                    >
+                      {period.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="h-96">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
-                    data={historicalData}
+                    data={filteredHistoricalData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -382,11 +346,18 @@ const RecessionDashboard = () => {
                   Performance Analysis
                 </h3>
                 <p className="text-gray-700">
-                  The chart above shows how each model's predictions compared to
-                  actual recession periods (in red). Models with lines closely
-                  tracking the actual recession line performed better. Note that
-                  predictions are shown with a 3-month minimum lag to reflect
-                  real-world data availability.
+                  {filteredHistoricalData.length === 0 ? (
+                    "No data available for the selected period. Try selecting a different timeframe."
+                  ) : (
+                    <>
+                      The chart above shows how each model's predictions compared to
+                      actual recession periods (in red). Models with lines closely
+                      tracking the actual recession line performed better.
+                      {historicalPeriod !== "last12" && (
+                        <span> Examining historical recession periods can provide insight into how these models would have performed during past economic crises.</span>
+                      )}
+                    </>
+                  )}
                 </p>
               </div>
             </>
@@ -482,6 +453,10 @@ const RecessionDashboard = () => {
                 to generate predictions based on the same input data. By
                 comparing multiple models, users can gain a more comprehensive
                 view of potential economic outcomes.
+              </p>
+              <p className="text-gray-700">
+                Models are regularly retrained with the latest economic data to ensure
+                predictions remain current and accurate.
               </p>
             </div>
           </div>
