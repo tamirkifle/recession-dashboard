@@ -45,7 +45,7 @@ const RecessionDashboard = () => {
   
   // Define key historical recession periods (for selection)
   const recessionPeriods = [
-    { id: "last12", name: "Last 12 Months" },
+    { id: "last12", name: "12 Months Before Latest Data" },
     { id: "covid", name: "COVID-19 (2020)", start: "2020-01-01", end: "2020-12-31" },
     { id: "gfc", name: "Financial Crisis (2007-2009)", start: "2007-10-01", end: "2009-06-30" },
     { id: "dotcom", name: "DotCom Bubble (2001)", start: "2001-01-01", end: "2002-01-31" },
